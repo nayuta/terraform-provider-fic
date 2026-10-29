@@ -76,6 +76,7 @@ func resourceEriRouterToUNOConnectionV1() *schema.Resource {
 						"Interconnect-Tokyo-7", "Interconnect-Tokyo-8", "Interconnect-Tokyo-9",
 						"Interconnect-Tokyo-10", "Interconnect-Tokyo-11", "Interconnect-Tokyo-12",
 						"Interconnect-Tokyo-13", "Interconnect-Tokyo-14", "Interconnect-Tokyo-15",
+						"Interconnect-Tokyo-104",
 						"Interconnect-Osaka-1", "Interconnect-Osaka-2", "Interconnect-Osaka-3",
 						"Interconnect-Osaka-4", "Interconnect-Osaka-5",
 					}, false),
@@ -260,6 +261,7 @@ func resourceEriRouterToUNOConnectionV1Read(d *schema.ResourceData, meta interfa
 	d.Set("destination_contract_number", r.Destination.ContractNumber)
 	d.Set("destination_parent_contract_number", r.Destination.ParentContractNumber)
 	d.Set("destination_vpn_number", r.Destination.VPNNumber)
+	d.Set("destination_qos_type", r.Destination.QosType)
 	d.Set("destination_route_filter_out", r.Destination.RouteFilter.Out)
 
 	d.Set("connected_network_address", r.ConnectedNetworkAddress)
