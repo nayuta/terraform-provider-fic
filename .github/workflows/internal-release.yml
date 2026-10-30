@@ -1,0 +1,44 @@
+name: internal-release
+on:
+  push:
+    tags:
+      - 'v*-internal.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - name: Set up Go
+        uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2.2.0
+        with:
+          go-version: 1.18
+      - name: Test
+        run: go test ./...
+      - name: Build release packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+          for target in darwin_amd64 darwin_arm64 linux_amd64 linux_arm64 windows_amd64; do
+            GOOS="${target%_*}"
+            GOARCH="${target#*_}"
+            binary="terraform-provider-fic_v${version}"
+            if [ "$GOOS" = windows ]; then binary="${binary}.exe"; fi
+            CGO_ENABLED=0 GOOS="$GOOS" GOARCH="$GOARCH" go build -trimpath -o "dist/$binary" .
+            (cd dist && zip -q "terraform-provider-fic_${version}_${target}.zip" "$binary")
+            rm "dist/$binary"
+          done
+          (cd dist && sha256sum ./*.zip > "terraform-provider-fic_${version}_SHA256SUMS")
+      - name: Publish internal prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --verify-tag --prerelease \
+            --title "$GITHUB_REF_NAME" --notes "Internal provider build for filesystem-mirror installation." \
+            dist/*.zip dist/*_SHA256SUMS

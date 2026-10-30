@@ -16,6 +16,7 @@ on:
       - 'v*'
 jobs:
   goreleaser:
+    if: ${{ !contains(github.ref_name, '-internal.') }}
     runs-on: ubuntu-latest
     steps:
       -
